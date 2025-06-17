@@ -68,7 +68,7 @@ If you encounter issues on your OS, please open an issue or pull request.
     ```
 4. **Run the Streamlit app:**
     ```
-    streamlit run app.py
+    streamlit run ui/app.py
     ```
 5. **Use the app:**
 - Upload your US history documents.

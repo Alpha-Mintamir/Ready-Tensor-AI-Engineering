@@ -52,7 +52,3 @@ def split_docs(documents, chunk_size=1000, chunk_overlap=200):
     except Exception as e:
         print(f"Error splitting documents: {e}")
         return []
-
-# if __name__ == "__main__":
-#     docs = load_docs(str(folder_path))
-#     print(f"Loaded {len(docs)} documents.")

@@ -4,43 +4,10 @@ import os
 import sys
 from datetime import datetime
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 # Now use a regular import
 from processing.embeddings import query_db
-from core.generation import system_response
+from core.services import generate_answer, process_and_index_files, upload_file,save_chat_history, load_chat_history
 # --- Helper Functions ---
-
-
-def save_chat_history(session_id, history):
-    os.makedirs("ui/chat_histories", exist_ok=True)
-    with open(f"ui/chat_histories/{session_id}.json", "w", encoding="utf-8") as f:
-        json.dump(history, f, ensure_ascii=False, indent=2)
-
-def load_chat_history(session_id):
-    try:
-        with open(f"ui/chat_histories/{session_id}.json", "r", encoding="utf-8") as f:
-            return json.load(f)
-    except FileNotFoundError:
-        return []
-
-
-def get_rag_response(session_id,query):
-    """
-    Get a response from the RAG system using the provided query.
-    """
-    response = system_response(session_id, query)
-    return {
-        "answer": response["answer"],
-        "sources": response["sources"]
-    }
-
-def process_files(files, session_id):
-    for file in files:
-        save_path = f"ui/uploads/{session_id}/"
-        os.makedirs(save_path, exist_ok=True)
-        with open(os.path.join(save_path, file.name), "wb") as f:
-            f.write(file.getbuffer())
-    st.session_state.updating_kb = True
 
 # --- Session State Initialization ---
 
@@ -90,7 +57,8 @@ with st.expander("📄 Upload Documents", expanded=False):
     uploaded_files = st.file_uploader("Upload PDF, DOCX, or TXT files", type=["pdf", "docx", "txt"], accept_multiple_files=True)
     if uploaded_files:
         st.info("Uploading and processing files...")
-        process_files(uploaded_files, st.session_state.session_id)
+        upload_files = [upload_file(file) for file in uploaded_files]
+        process_and_index_files(uploaded_files, st.session_state.session_id)
         st.success("Files uploaded and processed!")
         st.session_state.updating_kb = False
 
@@ -100,7 +68,7 @@ user_input = st.text_input("Type your question...", key="user_input")
 if st.button("Send") and user_input:
     st.session_state.chat_history.append({"role": "user", "content": user_input})
     with st.spinner("Retrieving answer..."):
-        response = get_rag_response(st.session_state.session_id,user_input)
+        response = generate_answer(user_input)
     st.session_state.chat_history.append({"role": "bot", "content": response["answer"], "sources": response["sources"]})
     st.session_state.threads[st.session_state.session_id] = st.session_state.chat_history
     save_chat_history(st.session_state.session_id, st.session_state.chat_history)

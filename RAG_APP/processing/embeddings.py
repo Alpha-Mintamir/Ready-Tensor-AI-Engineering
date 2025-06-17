@@ -23,12 +23,23 @@ embeddings = get_embeddings()
 DOCUMENTS = load_docs(folder_path = Path(__file__).parent.parent / "documents")
 CHUNKS = split_docs(DOCUMENTS)
 
-chroma_db = Chroma.from_documents(
-    documents=CHUNKS, 
-    embedding=embeddings, 
-    persist_directory=CHROMA_PATH, 
-    collection_name="rag_app"
-    )
+def initialize_chroma_db():
+    if os.path.exists(CHROMA_PATH):
+        chroma_db = Chroma(
+            persist_directory=CHROMA_PATH,
+            embedding_function=embeddings,
+            collection_name="rag_app"
+        )
+    else: 
+        chroma_db = Chroma.from_documents(
+            documents=CHUNKS, 
+            embedding=embeddings, 
+            persist_directory=CHROMA_PATH, 
+            collection_name="rag_app"
+            )
+    return chroma_db
+
+chroma_db = initialize_chroma_db()
 
 def query_db(query: str):
     """
@@ -37,7 +48,7 @@ def query_db(query: str):
     """
     print(f"Querying database with: {query}")
     try:
-        retriever = chroma_db.as_retriever(search_kwargs={"k": 2})
+        retriever = chroma_db.as_retriever(search_kwargs={"k": 5})
         results = retriever.invoke(input=query)
         return results
     except Exception as e:
