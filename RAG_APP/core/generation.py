@@ -1,9 +1,9 @@
-# RAG_APP/core/generation.py
-from RAG_APP.processing.embeddings import chroma_db, query_db
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import ChatPromptTemplate
+from pathlib import Path
+from processing.embeddings import chroma_db, query_db
 from prompts import SYSTEM_PROMPT
 from config import Config
 
@@ -15,7 +15,7 @@ llm = ChatGoogleGenerativeAI(
     google_api_key=GOOGLE_API_KEY
 )
 
-def get_rag_response(query: str) -> dict:
+def get_rag_response(query: str, history: str = "") -> dict:
 
     retriever = chroma_db.as_retriever(search_kwargs={'k': 5})
     parser = StrOutputParser()
@@ -25,6 +25,8 @@ def get_rag_response(query: str) -> dict:
     
     template = """
     Guided by the system prompt {system_prompt}
+    Conversation history:
+    {history}
     Answer the question based only on the following context:
     {context}
     Question: {question}
@@ -37,6 +39,7 @@ def get_rag_response(query: str) -> dict:
             "context": retriever | format_docs,
              "question": RunnablePassthrough(),
              "system_prompt": lambda _: SYSTEM_PROMPT,
+             "history": lambda _: history,
     }      
         | prompt
         | llm

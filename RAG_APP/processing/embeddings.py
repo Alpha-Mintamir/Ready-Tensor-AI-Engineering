@@ -1,4 +1,5 @@
 from pathlib import Path
+import sys
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from dotenv import load_dotenv
 from langchain_community.vectorstores import Chroma
@@ -12,6 +13,10 @@ GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
 @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
 def get_embeddings():
+    """
+    Initializes and returns GoogleGenerativeAIEmbeddings for text embedding.
+    Uses exponential backoff for retries in case of failure.
+    """
     return GoogleGenerativeAIEmbeddings(
         model="models/text-embedding-004",
         google_api_key=GOOGLE_API_KEY,

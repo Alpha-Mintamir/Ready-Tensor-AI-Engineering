@@ -1,5 +1,3 @@
-# RAG_APP/core/config.py
-
 from pathlib import Path
 from dotenv import load_dotenv
 import os
@@ -34,6 +32,7 @@ class Config:
     # Paths
     BASE_DIR = Path(__file__).parent.parent
     DOCUMENTS_PATH = BASE_DIR / "documents"
+    CHAT_HISTORY_PATH = BASE_DIR / "chat_history"
     
 
     # Vectorstore

@@ -3,6 +3,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from typing import List
 from langchain_core.documents import Document
 from pathlib import Path
+import sys
 from dotenv import load_dotenv
 import os
 
